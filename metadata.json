@@ -1,0 +1,6 @@
+{
+  "name": "Brevity",
+  "description": "AI-powered text and sentence summarizer with multi-mode synthesis, readability analytics, animated prism loading UI, and local history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

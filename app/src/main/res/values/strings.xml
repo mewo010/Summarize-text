@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Brevity</string>
+    <string name="tagline">Distill complex text into crystal clarity</string>
+    <string name="nav_summarize">Summarize</string>
+    <string name="nav_history">Saved Vault</string>
+    <string name="nav_workflow">CI/CD Pipeline</string>
+    <string name="input_label">Source Text or Long Sentences</string>
+    <string name="input_placeholder">Paste or type a long article, complex sentence, meeting transcript, research abstract, or email thread to distill...</string>
+    <string name="action_paste">Paste</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_summarize">Distill &amp; Summarize</string>
+    <string name="action_copy">Copy Summary</string>
+    <string name="action_share">Share</string>
+    <string name="action_listen">Listen</string>
+    <string name="action_stop_listen">Stop Audio</string>
+    <string name="action_save">Save to Vault</string>
+    <string name="mode_executive">Executive Brief</string>
+    <string name="mode_bullets">Key Bullets</string>
+    <string name="mode_tldr">One-Line TL;DR</string>
+    <string name="mode_eli5">Simple / ELI5</string>
+    <string name="mode_actions">Action Items</string>
+    <string name="mode_academic">Academic Abstract</string>
+    <string name="length_concise">Concise</string>
+    <string name="length_balanced">Balanced</string>
+    <string name="length_detailed">Detailed</string>
+    <string name="loading_title">Distilling Your Text</string>
+    <string name="loading_step_1">Mapping sentence structure &amp; semantic density…</string>
+    <string name="loading_step_2">Extracting core thesis, claims &amp; key takeaways…</string>
+    <string name="loading_step_3">Polishing clarity, tone &amp; readability metrics…</string>
+    <string name="empty_history_title">Your Summary Vault is Empty</string>
+    <string name="empty_history_subtitle">Summaries you generate are automatically saved here for instant offline access, search, and sharing.</string>
+    <string name="security_prototype_notice">Prototype Note: Uses direct Gemini REST API via BuildConfig. Set GEMINI_API_KEY in the AI Studio Secrets panel for live AI generation.</string>
+</resources>
