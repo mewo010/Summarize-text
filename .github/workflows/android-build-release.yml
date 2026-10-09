@@ -22,7 +22,8 @@ permissions:
   contents: write
 
 env:
-  JAVA_VERSION: "17"
+  JAVA_VERSION: "21"
+  GRADLE_VERSION: "9.3.1"
   ARTIFACT_NAME: "brevity-android-apk"
 
 jobs:
@@ -47,13 +48,19 @@ jobs:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Configure Android SDK & Accept Licenses
+        run: |
+          SDK_DIR="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          mkdir -p "$SDK_DIR/licenses"
+          printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n8933bad161af4178b1185d1a37fbf41ea5269c55\n" > "$SDK_DIR/licenses/android-sdk-license"
+          printf "\n84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910\n" > "$SDK_DIR/licenses/android-sdk-preview-license"
+          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
 
-      - name: Setup Gradle Cache & Wrapper
+      - name: Setup Gradle ${{ env.GRADLE_VERSION }}
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.11.1"
+          gradle-version: ${{ env.GRADLE_VERSION }}
 
       - name: Prepare Environment & Secrets Fallback
         run: |
@@ -64,28 +71,28 @@ jobs:
             sed -i "s|GEMINI_API_KEY=.*|GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}|g" .env
           fi
 
-      - name: Ensure Debug Keystore Exists for Consistent Signing
+      - name: Restore or Generate Debug Keystore for Signing
         run: |
           if [ ! -f debug.keystore ]; then
-            keytool -genkey -v \
-              -keystore debug.keystore \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -dname "CN=Android Debug,O=Android,C=US"
+            if [ -f debug.keystore.base64 ]; then
+              base64 -d debug.keystore.base64 > debug.keystore
+            else
+              keytool -genkeypair -v \
+                -keystore debug.keystore \
+                -storepass android \
+                -alias androiddebugkey \
+                -keypass android \
+                -keyalg RSA \
+                -keysize 2048 \
+                -validity 10000 \
+                -dname "CN=Android Debug,O=Android,C=US"
+            fi
           fi
 
       - name: Build Debug & Release-Ready APK via Gradle
         run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-            ./gradlew assembleDebug --stacktrace
-          else
-            gradle assembleDebug --stacktrace
-          fi
+          gradle --version
+          gradle assembleDebug --no-daemon --stacktrace
 
       - name: Package APK & Compute SHA-256 Checksum
         id: prep_apk
@@ -100,6 +107,11 @@ jobs:
           fi
 
           APK_SOURCE=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          if [ -z "$APK_SOURCE" ]; then
+            echo "Error: Built APK not found in app/build/outputs/apk/debug"
+            exit 1
+          fi
+
           APK_FILE="Brevity-${TAG}.apk"
           cp "$APK_SOURCE" "dist/${APK_FILE}"
           SHA256=$(sha256sum "dist/${APK_FILE}" | awk '{print $1}')
@@ -163,6 +175,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.build-android.outputs.version_tag }}
+          target_commitish: ${{ github.sha }}
           name: "Brevity ${{ needs.build-android.outputs.version_tag }}"
           body_path: release_notes.md
           draft: false

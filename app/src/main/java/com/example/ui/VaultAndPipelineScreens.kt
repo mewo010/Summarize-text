@@ -388,11 +388,12 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "17"
-      - uses: android-actions/setup-android@v3
+          java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.3.1"
       - name: Build APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --no-daemon --stacktrace
       - name: Upload Built APK Artifact
         uses: actions/upload-artifact@v4
         with:
